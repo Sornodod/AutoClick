@@ -3,6 +3,7 @@ import pyautogui
 from pynput import mouse
 import threading
 import time
+import pygetwindow as gw
 
 click_positions = []
 recording = False
@@ -51,12 +52,19 @@ def run_clicker(delay, cycles, infinite, page, cycle_counter_text):
     except KeyboardInterrupt:
         pass
 
+def resize_window_loop():
+    for _ in range(10):
+        windows = gw.getWindowsWithTitle("Flet App")
+        if windows:
+            win = windows[0]
+            win.resizeTo(350, 450)
+            win.moveTo(win.left, win.top)
+            return
+        time.sleep(0.1)
+
 def main(page: ft.Page):
-    page.window.title_bar_hidden = False
-    page.window.frameless = False
-    page.window.left = 200
-    page.window.top = 100
-    page.window_resizable = False
+    page.title = "Flet App"
+    threading.Thread(target=resize_window_loop, daemon=True).start()
 
     cycle_counter_text = ft.Text("Текущий цикл: 0", size=16)
 
@@ -118,4 +126,5 @@ def main(page: ft.Page):
         start_button
     )
 
-ft.app(target=main)
+if __name__ == "__main__":
+    ft.app(target=main, view=ft.AppView.FLET_APP)
